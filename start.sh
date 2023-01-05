@@ -8,7 +8,7 @@
 # 1. Check if .env file exists
 if [ -e .env ]; then
     source .env
-else 
+else
     echo "It seems you didn´t create your .env file, so we will create one for you."
     cp .env.sample .env
     # exit 1
@@ -44,6 +44,12 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
         sudo cp -R ./conf.d/* $NGINX_FILES_PATH/conf.d
     fi
 
+    # Overwrite default conf files if we are on dev
+    if [ "$ENVIRONMENT" = "dev" ]; then
+        # Copy the dev configurations to the nginx conf folder
+        cp -R ./conf_dev.d/* $NGINX_FILES_PATH/conf.d
+    fi
+
     # If there was any errors inform the user
     if [ $? -ne 0 ]; then
         echo
@@ -52,10 +58,10 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
         echo "There was an error trying to copy the nginx conf files."
         echo "The proxy will still work with default options, but"
         echo "the custom settings your have made could not be loaded."
-        echo 
+        echo
         echo "#######################################################"
     fi
-fi 
+fi
 
 # 7. Start proxy
 

@@ -6,6 +6,7 @@
 {{ $debug_all := $.Env.DEBUG }}
 {{ $sha1_upstream_name := parseBool (coalesce $.Env.SHA1_UPSTREAM_NAME "false") }}
 {{ $default_root_response := coalesce $.Env.DEFAULT_ROOT "404" }}
+{{ $trust_downstream_proxy := parseBool (coalesce $.Env.TRUST_DOWNSTREAM_PROXY "true") }}
 
 {{ define "ssl_policy" }}
 	{{ if eq .ssl_policy "Mozilla-Modern" }}
@@ -105,7 +106,7 @@ upstream {{ .Upstream }} {
             {{ end }}
         {{ end }}
 		{{ range $knownNetwork := $networks }}
-			{{ range $containerNetwork := $container.Networks }}
+			{{ range $containerNetwork := sortObjectsByKeysAsc $container.Networks "Name" }}
 				{{ if (and (ne $containerNetwork.Name "ingress") (or (eq $knownNetwork.Name $containerNetwork.Name) (eq $knownNetwork.Name "host"))) }}
         ## Can be connected with "{{ $containerNetwork.Name }}" network
                     {{ if $address }}
@@ -150,14 +151,19 @@ upstream {{ .Upstream }} {
 # If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
 # scheme used to connect to this server
 map $http_x_forwarded_proto $proxy_x_forwarded_proto {
-  default $http_x_forwarded_proto;
+  default {{ if $trust_downstream_proxy }}$http_x_forwarded_proto{{ else }}$scheme{{ end }};
   ''      $scheme;
+}
+
+map $http_x_forwarded_host $proxy_x_forwarded_host {
+  default {{ if $trust_downstream_proxy }}$http_x_forwarded_host{{ else }}$http_host{{ end }};
+  ''      $http_host;
 }
 
 # If we receive X-Forwarded-Port, pass it through; otherwise, pass along the
 # server port the client connected to
 map $http_x_forwarded_port $proxy_x_forwarded_port {
-  default $http_x_forwarded_port;
+  default {{ if $trust_downstream_proxy }}$http_x_forwarded_port{{ else }}$server_port{{ end }};
   ''      $server_port;
 }
 
@@ -211,6 +217,7 @@ proxy_set_header Upgrade $http_upgrade;
 proxy_set_header Connection $proxy_connection;
 proxy_set_header X-Real-IP $remote_addr;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Host $proxy_x_forwarded_host;
 proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
 proxy_set_header X-Forwarded-Ssl $proxy_x_forwarded_ssl;
 proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
