@@ -23,7 +23,8 @@ if [ ! -z ${SERVICE_NETWORK+X} ]; then
 fi
 
 # 4. Download the latest version of nginx.tmpl
-curl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl > nginx.tmpl
+# FL note: We have made customizations nginx.tmpl so merge from upstream with care!
+# curl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl > nginx.tmpl
 
 # 5. Update local images
 docker compose pull
@@ -48,6 +49,22 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
     if [ "$ENVIRONMENT" = "dev" ]; then
         # Copy the dev configurations to the nginx conf folder
         cp -R ./conf_dev.d/* $NGINX_FILES_PATH/conf.d
+    fi
+
+    # Overwrite default conf files if we are on staging
+    if [ "$ENVIRONMENT" = "staging" ]; then
+        WHITELIST=./conf_staging.d/ip-whitelist.conf
+        if [ -f "$WHITELIST" ]; then
+            # Generate the ip whitelist conf file from the .env variables
+            > "$WHITELIST"
+            echo "allow ${IP_DOCKER_NETWORK:-127.0.0.1};" >> "$WHITELIST"
+            echo "allow ${IP_RM:-127.0.0.1};" >> "$WHITELIST"
+            echo "allow ${IP_DEV_1:-127.0.0.1};" >> "$WHITELIST"
+            echo "allow ${IP_DEV_2:-127.0.0.1};" >> "$WHITELIST"
+            echo "deny all;" >> "$WHITELIST"
+        fi
+        # Copy the staging configurations to the nginx conf folder
+        cp -R ./conf_staging.d/* $NGINX_FILES_PATH/conf.d
     fi
 
     # If there was any errors inform the user
