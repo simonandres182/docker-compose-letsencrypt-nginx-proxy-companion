@@ -55,7 +55,7 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
     if [ "$ENVIRONMENT" = "staging" ]; then
         WHITELIST=./conf_staging.d/ip-whitelist.conf
         # Generate the ip whitelist conf file from the .env variables
-        > "$WHITELIST"
+        install -D /dev/null "$WHITELIST"
         echo "allow ${IP_DOCKER_NETWORK:-127.0.0.1};" >> "$WHITELIST"
         echo "allow ${IP_RM:-127.0.0.1};" >> "$WHITELIST"
         echo "allow ${IP_DEV_1:-127.0.0.1};" >> "$WHITELIST"
