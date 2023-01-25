@@ -54,15 +54,14 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
     # Overwrite default conf files if we are on staging
     if [ "$ENVIRONMENT" = "staging" ]; then
         WHITELIST=./conf_staging.d/ip-whitelist.conf
-        if [ -f "$WHITELIST" ]; then
-            # Generate the ip whitelist conf file from the .env variables
-            > "$WHITELIST"
-            echo "allow ${IP_DOCKER_NETWORK:-127.0.0.1};" >> "$WHITELIST"
-            echo "allow ${IP_RM:-127.0.0.1};" >> "$WHITELIST"
-            echo "allow ${IP_DEV_1:-127.0.0.1};" >> "$WHITELIST"
-            echo "allow ${IP_DEV_2:-127.0.0.1};" >> "$WHITELIST"
-            echo "deny all;" >> "$WHITELIST"
-        fi
+        # Generate the ip whitelist conf file from the .env variables
+        > "$WHITELIST"
+        echo "allow ${IP_DOCKER_NETWORK:-127.0.0.1};" >> "$WHITELIST"
+        echo "allow ${IP_RM:-127.0.0.1};" >> "$WHITELIST"
+        echo "allow ${IP_DEV_1:-127.0.0.1};" >> "$WHITELIST"
+        echo "allow ${IP_DEV_2:-127.0.0.1};" >> "$WHITELIST"
+        echo "deny all;" >> "$WHITELIST"
+
         # Copy the staging configurations to the nginx conf folder
         cp -R ./conf_staging.d/* $NGINX_FILES_PATH/conf.d
     fi
