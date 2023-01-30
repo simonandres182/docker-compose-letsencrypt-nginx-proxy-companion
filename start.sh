@@ -58,6 +58,7 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
         install -D /dev/null "$WHITELIST"
         echo "allow ${IP_DOCKER_NETWORK:-127.0.0.1};" >> "$WHITELIST"
         echo "allow ${IP_RM:-127.0.0.1};" >> "$WHITELIST"
+        echo "allow ${IP_RM_2:-127.0.0.1};" >> "$WHITELIST"
         echo "allow ${IP_DEV_1:-127.0.0.1};" >> "$WHITELIST"
         echo "allow ${IP_DEV_2:-127.0.0.1};" >> "$WHITELIST"
         echo "deny all;" >> "$WHITELIST"
