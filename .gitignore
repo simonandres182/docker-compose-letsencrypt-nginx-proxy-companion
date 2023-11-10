@@ -3,4 +3,4 @@ data
 !.env.sample
 .DS_Store
 nginx-data
-conf_staging.d/ip-whitelist.conf
+ip-whitelist.conf
