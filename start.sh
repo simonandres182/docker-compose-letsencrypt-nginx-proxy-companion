@@ -45,6 +45,29 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
         sudo cp -R ./conf.d/* $NGINX_FILES_PATH/conf.d
     fi
 
+    # Whitlist IPs. Our custom server-level firewall
+    # We maintain a master template to maintain idempotency.
+    cp ./nginx.tmpl.master ./nginx.tmpl
+
+    WHITELIST=./conf.d/ip-whitelist.conf
+    # Generate the ip whitelist conf file from the .env variables
+    install -D /dev/null "$WHITELIST"
+    echo "allow ${IP_DOCKER_NETWORK:-127.0.0.1};" >> "$WHITELIST"
+    echo "allow ${IP_RM:-127.0.0.1};" >> "$WHITELIST"
+    echo "allow ${IP_RM_2:-127.0.0.1};" >> "$WHITELIST"
+    echo "allow ${IP_DEV_1:-127.0.0.1};" >> "$WHITELIST"
+    echo "allow ${IP_DEV_2:-127.0.0.1};" >> "$WHITELIST"
+    echo "allow ${IP_DEV_3:-127.0.0.1};" >> "$WHITELIST"
+    echo "allow ${IP_DEV_4:-127.0.0.1};" >> "$WHITELIST"
+    echo "allow ${IP_DEV_5:-127.0.0.1};" >> "$WHITELIST"
+    echo "deny all;" >> "$WHITELIST"
+
+    # Write the included hosts from .env file to the nginx.tmpl
+    INCLUDED_HOSTS=$(cat .env | grep FIREWALL_PROTECTED_HOSTS | cut -d '=' -f2)
+
+    # Replace a placeholder in nginx.tmpl with the actual value
+    sed -i "s/{{INCLUDED_HOSTS}}/$INCLUDED_HOSTS/g" ./nginx.tmpl
+
     # Overwrite default conf files if we are on dev
     if [ "$ENVIRONMENT" = "dev" ]; then
         # Copy the dev configurations to the nginx conf folder
@@ -53,16 +76,6 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
 
     # Overwrite default conf files if we are on staging
     if [ "$ENVIRONMENT" = "staging" ]; then
-        WHITELIST=./conf_staging.d/ip-whitelist.conf
-        # Generate the ip whitelist conf file from the .env variables
-        install -D /dev/null "$WHITELIST"
-        echo "allow ${IP_DOCKER_NETWORK:-127.0.0.1};" >> "$WHITELIST"
-        echo "allow ${IP_RM:-127.0.0.1};" >> "$WHITELIST"
-        echo "allow ${IP_RM_2:-127.0.0.1};" >> "$WHITELIST"
-        echo "allow ${IP_DEV_1:-127.0.0.1};" >> "$WHITELIST"
-        echo "allow ${IP_DEV_2:-127.0.0.1};" >> "$WHITELIST"
-        echo "deny all;" >> "$WHITELIST"
-
         # Copy the staging configurations to the nginx conf folder
         cp -R ./conf_staging.d/* $NGINX_FILES_PATH/conf.d
     fi
@@ -84,8 +97,10 @@ fi
 
 # Check if you have multiple network
 if [ -z ${SERVICE_NETWORK+X} ]; then
+    echo "Starting proxy..."
     docker compose up -d
 else
+    echo "Starting proxy with multiple networks..."
     docker compose -f docker-compose-multiple-networks.yml up -d
 fi
 
