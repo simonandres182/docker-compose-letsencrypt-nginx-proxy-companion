@@ -11,6 +11,7 @@ services:
       - "${IP:-0.0.0.0}:${DOCKER_HTTPS:-443}:443"
     volumes:
       - ${NGINX_FILES_PATH:-./data}/conf.d:/etc/nginx/conf.d
+      - ${NGINX_FILES_PATH:-./data}/conf_custom.d:/etc/nginx/conf_custom.d
       - ${NGINX_FILES_PATH:-./data}/vhost.d:/etc/nginx/vhost.d
       - ${NGINX_FILES_PATH:-./data}/html:/usr/share/nginx/html
       - ${NGINX_FILES_PATH:-./data}/certs:/etc/nginx/certs:ro
@@ -30,6 +31,7 @@ services:
       SSL_POLICY: ${SSL_POLICY:-Mozilla-Intermediate}
     volumes:
       - ${NGINX_FILES_PATH:-./data}/conf.d:/etc/nginx/conf.d
+      - ${NGINX_FILES_PATH:-./data}/conf_custom.d:/etc/nginx/conf_custom.d
       - ${NGINX_FILES_PATH:-./data}/vhost.d:/etc/nginx/vhost.d
       - ${NGINX_FILES_PATH:-./data}/html:/usr/share/nginx/html
       - ${NGINX_FILES_PATH:-./data}/certs:/etc/nginx/certs:ro

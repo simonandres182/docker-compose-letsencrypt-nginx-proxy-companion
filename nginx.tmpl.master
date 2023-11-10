@@ -371,8 +371,8 @@ server {
         {{ end }}
     {{ end }}
 
-    {{- if and (exists "/etc/nginx/conf.d/ip-whitelist.conf") ($include) }}
-    include /etc/nginx/conf.d/ip-whitelist.conf;
+    {{- if and (exists "/etc/nginx/conf_custom.d/ip-whitelist.conf") ($include) }}
+    include /etc/nginx/conf_custom.d/ip-whitelist.conf;
     {{- end }}
 
     # Do not HTTPS redirect Let's Encrypt ACME challenge
@@ -400,12 +400,6 @@ server {
     {{- if $server_tokens }}
     server_tokens {{ $server_tokens }};
     {{- end }}
-    {{ $globals.access_log }}
-    {{- if or (not $is_https) (eq $https_method "noredirect") }}
-    listen {{ $globals.external_http_port }} {{ $default_server }};
-        {{- if $globals.enable_ipv6 }}
-    listen [::]:{{ $globals.external_http_port }} {{ $default_server }};
-        {{- end }}
 
     {{ $include := false }}
     {{ range $index, $value := $includedHosts }}
@@ -414,9 +408,16 @@ server {
         {{ end }}
     {{ end }}
 
-    {{- if and (exists "/etc/nginx/conf.d/ip-whitelist.conf") ($include) }}
-    include /etc/nginx/conf.d/ip-whitelist.conf;
+    {{- if and (exists "/etc/nginx/conf_custom.d/ip-whitelist.conf") ($include) }}
+    include /etc/nginx/conf_custom.d/ip-whitelist.conf;
     {{- end }}
+
+    {{ $globals.access_log }}
+    {{- if or (not $is_https) (eq $https_method "noredirect") }}
+    listen {{ $globals.external_http_port }} {{ $default_server }};
+        {{- if $globals.enable_ipv6 }}
+    listen [::]:{{ $globals.external_http_port }} {{ $default_server }};
+        {{- end }}
 
     {{- end }}
     {{- if $is_https }}
@@ -506,8 +507,8 @@ server {
         {{ end }}
     {{ end }}
 
-    {{- if and (exists "/etc/nginx/conf.d/ip-whitelist.conf") ($include) }}
-    include /etc/nginx/conf.d/ip-whitelist.conf;
+    {{- if and (exists "/etc/nginx/conf_custom.d/ip-whitelist.conf") ($include) }}
+    include /etc/nginx/conf_custom.d/ip-whitelist.conf;
     {{- end }}
 
     return 500;

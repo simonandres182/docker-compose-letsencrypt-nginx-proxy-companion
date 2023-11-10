@@ -37,8 +37,12 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
     # Create the conf folder if it does not exists
     mkdir -p $NGINX_FILES_PATH/conf.d
 
+    # Create the custom conf folder if it does not exists. For configuration not to be included globally.
+    mkdir -p $NGINX_FILES_PATH/conf_custom.d
+
     # Copy the special configurations to the nginx conf folder
     cp -R ./conf.d/* $NGINX_FILES_PATH/conf.d
+    cp -R ./conf_custom.d/* $NGINX_FILES_PATH/conf_custom.d
 
     # Check if there was an error and try with sudo
     if [ $? -ne 0 ]; then
@@ -49,7 +53,7 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
     # We maintain a master template to maintain idempotency.
     cp ./nginx.tmpl.master ./nginx.tmpl
 
-    WHITELIST=./conf.d/ip-whitelist.conf
+    WHITELIST=./conf_custom.d/ip-whitelist.conf
     # Generate the ip whitelist conf file from the .env variables
     install -D /dev/null "$WHITELIST"
     echo "allow ${IP_DOCKER_NETWORK:-127.0.0.1};" >> "$WHITELIST"
@@ -69,13 +73,13 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
     sed -i "s/{{INCLUDED_HOSTS}}/$INCLUDED_HOSTS/g" ./nginx.tmpl
 
     # Overwrite default conf files if we are on dev
-    if [ "$ENVIRONMENT" = "dev" ]; then
+    if [ -n "$(ls -A ./conf_dev.d 2>/dev/null)" ] && [ "$ENVIRONMENT" = "dev" ]; then
         # Copy the dev configurations to the nginx conf folder
         cp -R ./conf_dev.d/* $NGINX_FILES_PATH/conf.d
     fi
 
     # Overwrite default conf files if we are on staging
-    if [ "$ENVIRONMENT" = "staging" ]; then
+    if [ -n "$(ls -A ./conf_staging.d 2>/dev/null)" ] && [ "$ENVIRONMENT" = "staging" ]; then
         # Copy the staging configurations to the nginx conf folder
         cp -R ./conf_staging.d/* $NGINX_FILES_PATH/conf.d
     fi
