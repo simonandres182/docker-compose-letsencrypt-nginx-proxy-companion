@@ -42,7 +42,6 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
 
     # Copy the special configurations to the nginx conf folder
     cp -R ./conf.d/* $NGINX_FILES_PATH/conf.d
-    cp -R ./conf_custom.d/* $NGINX_FILES_PATH/conf_custom.d
 
     # Check if there was an error and try with sudo
     if [ $? -ne 0 ]; then
@@ -65,6 +64,8 @@ if [ ! -z ${USE_NGINX_CONF_FILES+X} ] && [ "$USE_NGINX_CONF_FILES" = true ]; the
     echo "allow ${IP_DEV_4:-127.0.0.1};" >> "$WHITELIST"
     echo "allow ${IP_DEV_5:-127.0.0.1};" >> "$WHITELIST"
     echo "deny all;" >> "$WHITELIST"
+
+    cp -R ./conf_custom.d/* $NGINX_FILES_PATH/conf_custom.d
 
     # Write the included hosts from .env file to the nginx.tmpl
     INCLUDED_HOSTS=$(cat .env | grep FIREWALL_PROTECTED_HOSTS | cut -d '=' -f2)
