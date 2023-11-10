@@ -4,3 +4,4 @@ data
 .DS_Store
 nginx-data
 ip-whitelist.conf
+nginx.tmpl
