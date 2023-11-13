@@ -364,17 +364,6 @@ server {
         {{- end }}
     {{ $globals.access_log }}
 
-    {{ $include := false }}
-    {{ range $index, $value := $includedHosts }}
-        {{ if eq $value $host }}
-            {{ $include = true }}
-        {{ end }}
-    {{ end }}
-
-    {{- if and (exists "/etc/nginx/conf_custom.d/ip-whitelist.conf") ($include) }}
-    include /etc/nginx/conf_custom.d/ip-whitelist.conf;
-    {{- end }}
-
     # Do not HTTPS redirect Let's Encrypt ACME challenge
     location ^~ /.well-known/acme-challenge/ {
         auth_basic off;
@@ -401,17 +390,6 @@ server {
     server_tokens {{ $server_tokens }};
     {{- end }}
 
-    {{ $include := false }}
-    {{ range $index, $value := $includedHosts }}
-        {{ if eq $value $host }}
-            {{ $include = true }}
-        {{ end }}
-    {{ end }}
-
-    {{- if and (exists "/etc/nginx/conf_custom.d/ip-whitelist.conf") ($include) }}
-    include /etc/nginx/conf_custom.d/ip-whitelist.conf;
-    {{- end }}
-
     {{ $globals.access_log }}
     {{- if or (not $is_https) (eq $https_method "noredirect") }}
     listen {{ $globals.external_http_port }} {{ $default_server }};
@@ -420,6 +398,7 @@ server {
         {{- end }}
 
     {{- end }}
+
     {{- if $is_https }}
     listen {{ $globals.external_https_port }} ssl http2 {{ $default_server }};
         {{- if $globals.enable_ipv6 }}
@@ -452,6 +431,17 @@ server {
     }
     add_header Strict-Transport-Security $sts_header always;
         {{- end }}
+    {{- end }}
+
+    {{ $include := false }}
+    {{ range $index, $value := $includedHosts }}
+        {{ if eq $value $host }}
+            {{ $include = true }}
+        {{ end }}
+    {{ end }}
+
+    {{- if and (exists "/etc/nginx/conf_custom.d/ip-whitelist.conf") ($include) }}
+        include /etc/nginx/conf_custom.d/ip-whitelist.conf;
     {{- end }}
 
     {{- if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
@@ -499,17 +489,6 @@ server {
     listen [::]:{{ $globals.external_https_port }} ssl http2 {{ $default_server }};
         {{- end }}
     {{ $globals.access_log }}
-
-    {{ $include := false }}
-    {{ range $index, $value := $includedHosts }}
-        {{ if eq $value $host }}
-            {{ $include = true }}
-        {{ end }}
-    {{ end }}
-
-    {{- if and (exists "/etc/nginx/conf_custom.d/ip-whitelist.conf") ($include) }}
-    include /etc/nginx/conf_custom.d/ip-whitelist.conf;
-    {{- end }}
 
     return 500;
 
