@@ -490,17 +490,6 @@ server {
         {{- end }}
     {{ $globals.access_log }}
 
-    {{ $include := false }}
-    {{ range $index, $value := $includedHosts }}
-        {{ if eq $value $host }}
-            {{ $include = true }}
-        {{ end }}
-    {{ end }}
-
-    #{{- if and (exists "/etc/nginx/conf_custom.d/ip-whitelist.conf") ($include) }}
-    #include /etc/nginx/conf_custom.d/ip-whitelist.conf;
-    #{{- end }}
-
     return 500;
 
     ssl_certificate /etc/nginx/certs/default.crt;
